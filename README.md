@@ -12,3 +12,11 @@ of operation of each task.
 # Dag Generated
 
 ![Airflow Installation and Dags Genration](docs/airflow_dag.png)
+
+# Successfuly executed Dag
+
+![Sucessful execution of the Dag](docs/Success_execution.png)
+
+# output of excuted Dag
+
+![Screenshot of sucessfuly executed Dag results ](docs/extracted_stock_price.png)

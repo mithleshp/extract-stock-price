@@ -9,13 +9,12 @@ import pandas as pd
 # Method to extract stock value from yahoo finaance library.
 
 def extract_stock(symbol, location):
-    start_date = datetime.today()
-    start_date = datetime(2020,12,1)
+    start_date = datetime.today() - timedelta(days=1)
     end_date = start_date + timedelta(days=1)
-    df = yf.download(symbol, start=start_date, end=end_date, interval='1m')
-    print('after call yf.download, df.head():')
+    df = yf.download(symbol, start=start_date, end=end_date, interval='15m')
+    print('after call yf.download', df.head())
     print(df.head)
-    filename = {symbol}.csv
+    filename = f'{location}/{symbol}.csv'
     print('write to ', filename)
     df.to_csv(filename, header=False)
 
@@ -33,15 +32,15 @@ def query_stock(location):
 
 # configure the flow to retry every 5 min for 2 attempts
 default_args = {
-    'start_date': datetime(2024, 7, 11),
-    'schedule_interval': '@daily',
+    'start_date': datetime(2024, 8, 1),
+    'schedule_interval': None,
     #'retries': 2,
     #'retry_delay': timedelta(minutes=55),
 }
 today_str = (datetime.now()).strftime('%Y-%m-%d')
 #raw_data_loc = '/tmp/data/$(date "+%Y-%m-%d")'
-raw_data_loc = f'/Users/mithl/airflow{today_str}'
-extract_data_loc = '/Users/mithl/airflow/'
+raw_data_loc = f'/home/test/airflow/{today_str}'
+extract_data_loc = '/home/test/airflow/extracted/'
 
 #run the workflow on 6 PM every work day
 dag = DAG(
@@ -49,15 +48,15 @@ dag = DAG(
     default_args=default_args,
     description='A simple DAG',
     #schedule_interval="* 18 * * 1,2,3,4,5"
-    schedule_interval="@daily"
+    #schedule_interval = None
 
 )
 
 # create a temporary location
 t0 = BashOperator(
     task_id='init_dir',
-    #bash_command=f'mkdir -p {raw_data_loc}',
-    bash_command=f'echo "Hello How are you"',
+    bash_command=f'mkdir -p {raw_data_loc}',
+    #bash_command=f'echo "Hello How are you"',
     dag=dag
 )
 
@@ -95,7 +94,6 @@ t5 = PythonOperator(
     python_callable=query_stock,
     op_kwargs={'location': extract_data_loc}
 )
-
 
 t0 >> [t1, t2]
 t1 >> t3
